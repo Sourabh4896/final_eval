@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'time_util.dart';
+import 'device_model_util.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,29 +11,30 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: TimeScreen(),
+      home: DeviceModelScreen(),
     );
   }
 }
 
-class TimeScreen extends StatefulWidget {
+class DeviceModelScreen extends StatefulWidget {
   @override
-  _TimeScreenState createState() => _TimeScreenState();
+  _DeviceModelScreenState createState() => _DeviceModelScreenState();
 }
 
-class _TimeScreenState extends State<TimeScreen> {
-  int _currentTimeInMilliseconds = 0;
+class _DeviceModelScreenState extends State<DeviceModelScreen> {
+  String _deviceModelId = "Fetching...";
 
   @override
   void initState() {
     super.initState();
-    _fetchCurrentTime();
+    _fetchDeviceModelId();
   }
 
-  /// Fetches the current time in milliseconds and updates the UI.
-  void _fetchCurrentTime() {
+  /// Fetches the device model ID and updates the UI.
+  Future<void> _fetchDeviceModelId() async {
+    final modelId = await DeviceModelUtil.getDeviceModelId();
     setState(() {
-      _currentTimeInMilliseconds = TimeUtil.getCurrentTimeInMilliseconds();
+      _deviceModelId = modelId;
     });
   }
 
@@ -41,25 +42,25 @@ class _TimeScreenState extends State<TimeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Current Time in Milliseconds'),
+        title: const Text('Device Model ID'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              "Current Time in Milliseconds:",
+              "Device Model ID:",
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 20),
             Text(
-              _currentTimeInMilliseconds.toString(),
+              _deviceModelId,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _fetchCurrentTime,
-              child: const Text('Get Current Time'),
+              onPressed: _fetchDeviceModelId,
+              child: const Text('Get Device Model'),
             ),
           ],
         ),
