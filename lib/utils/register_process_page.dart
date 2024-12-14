@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'device_id_util.dart';  // Import the DeviceIdUtil class
-import './../utils/key_pair_generator.dart';  // Import the RSA key pair generation functionality
+import 'device_id_util.dart'; // Import the DeviceIdUtil class
+import './../utils/key_pair_generator.dart'; // Import the RSA key pair generation functionality
+import 'data_signer.dart'; // Import the DataSigner class
+import 'display_registered_info.dart';
 
 class RegisterProcessPage extends StatefulWidget {
   @override
@@ -10,16 +12,18 @@ class RegisterProcessPage extends StatefulWidget {
 class _RegisterProcessPageState extends State<RegisterProcessPage> {
   double progress = 0.0;
   int currentStep = 1;
-  String deviceId = "Fetching...";  // Initialize deviceId as "Fetching..."
+  String deviceId = "Fetching..."; // Initialize deviceId as "Fetching..."
   bool isDeviceIdFetched = false;
-  String publicKey = "Generating...";  // Initialize publicKey as "Generating..."
-  bool isKeyGenerated = false;  // Track key generation state
+  String publicKey = "Generating..."; // Initialize publicKey as "Generating..."
+  String privateKey = ""; // Declare the privateKey variable
+  bool isKeyGenerated = false; // Track key generation state
+  String signedData = "Signing..."; // Initialize signedData as "Signing..."
 
   @override
   void initState() {
     super.initState();
-    _fetchDeviceId();  // Fetch the device ID when the page loads
-    Future.delayed(Duration(seconds: 2), _updateStep);  // Start the process after a delay
+    _fetchDeviceId(); // Fetch the device ID when the page loads
+    Future.delayed(Duration(seconds: 2), _updateStep); // Start the process after a delay
   }
 
   // Fetch device ID using DeviceIdUtil
@@ -27,7 +31,7 @@ class _RegisterProcessPageState extends State<RegisterProcessPage> {
     String id = await DeviceIdUtil.getDeviceUniqueId();
     setState(() {
       deviceId = id;
-      isDeviceIdFetched = true;  // Mark device ID as fetched
+      isDeviceIdFetched = true; // Mark device ID as fetched
     });
   }
 
@@ -38,31 +42,49 @@ class _RegisterProcessPageState extends State<RegisterProcessPage> {
         progress = 0.33;
       } else if (currentStep == 2) {
         progress = 0.66;
-        _generateRSAKeyPair();  // Generate RSA key pair during step 2
+        _generateRSAKeyPair(); // Generate RSA key pair during step 2
       } else if (currentStep == 3) {
         progress = 1.0;
+        _signData(); // Sign data during step 3
       }
       currentStep++;
     });
 
-    // After the 3rd step, show "Registration Successful"
+    // In _updateStep(), modify the final step completion logic
     if (currentStep > 3) {
-      setState(() {
-        currentStep = 0;  // Reset step to 0 (final state)
-      });
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DisplayRegisteredInfoPage(
+            publicKey: publicKey,
+            deviceId: deviceId,
+            signedData: signedData,
+          ),
+        ),
+      );
     } else {
-      // Continue the process after a 2-second delay
       Future.delayed(Duration(seconds: 2), _updateStep);
     }
+
   }
 
-  // Generate RSA key pair and update the public key
+  // Sign data using DataSigner
+  void _signData() {
+    DataSigner dataSigner = DataSigner(); // Instantiate the DataSigner class
+    String dataToSign = "SampleData"; // Replace with actual data to sign
+    setState(() {
+      signedData = dataSigner.signData(dataToSign, privateKey); // Use private key to sign data
+    });
+  }
+
+  // Generate RSA key pair and update the public key and private key
   Future<void> _generateRSAKeyPair() async {
     Map<String, String> keys = await generateRSAKeyPair();
     setState(() {
       if (keys.isNotEmpty) {
         publicKey = keys['publicKey'] ?? "Error generating key";
-        isKeyGenerated = true;  // Mark key generation as completed
+        privateKey = keys['privateKey'] ?? ""; // Save private key for signing
+        isKeyGenerated = true; // Mark key generation as completed
       } else {
         publicKey = "Error generating key";
       }
