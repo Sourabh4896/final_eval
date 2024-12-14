@@ -2,30 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class SendingDataScreen extends StatefulWidget {
+class SuccessScreen extends StatefulWidget {
   final String publicKey;
   final String deviceId;
   final String signedData;
 
-  SendingDataScreen({
+  SuccessScreen({
     required this.publicKey,
     required this.deviceId,
     required this.signedData,
   });
 
   @override
-  _SendingDataScreenState createState() => _SendingDataScreenState();
+  _SuccessScreenState createState() => _SuccessScreenState();
 }
 
-class _SendingDataScreenState extends State<SendingDataScreen> {
+class _SuccessScreenState extends State<SuccessScreen> {
+  String statusMessage = "Waiting for server response...";
   double progress = 0.0;
-  String statusMessage = "Ready to send data.";
 
-  // Send data to server when the user clicks the button
+  // Send data to server and handle the response
   Future<void> _sendDataToServer() async {
     setState(() {
       statusMessage = 'Sending data to server...';
-      progress = 0.5; // Update the progress bar while sending
+      progress = 0.5;
     });
 
     final url = Uri.parse('http://10.70.73.218:5000/save_data');
@@ -40,24 +40,51 @@ class _SendingDataScreenState extends State<SendingDataScreen> {
     );
 
     if (response.statusCode == 200) {
-      setState(() {
-        statusMessage = 'Data sent successfully!';
-        progress = 1.0; // Update progress to 100% on success
-      });
+      // Once data is sent successfully, check the response from the server
+      final responseData = json.decode(response.body);
 
-      // After data is sent successfully, navigate to SuccessScreen
-      Future.delayed(Duration(seconds: 1), () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => SuccessScreen()),
-        );
-      });
+      if (responseData['status'] == 'authorize') {
+        setState(() {
+          statusMessage = 'User Authorized!';
+          progress = 1.0;
+        });
+
+        // Optionally, navigate to the authorized page after success
+        Future.delayed(Duration(seconds: 2), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => AuthorizedPage()),
+          );
+        });
+      } else if (responseData['status'] == 'processing') {
+        setState(() {
+          statusMessage = 'Processing your request...';
+          progress = 0.8;
+        });
+
+        // Wait for some time and then try again, or show a retry button
+        Future.delayed(Duration(seconds: 2), () {
+          _sendDataToServer(); // Retry if processing
+        });
+      } else if (responseData['status'] == 'error') {
+        setState(() {
+          statusMessage = 'Error: ${responseData['message']}';
+          progress = 0.0;
+        });
+      }
     } else {
       setState(() {
         statusMessage = 'Failed to send data: ${response.body}';
         progress = 0.0;
       });
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Start the process when the screen is loaded
+    _sendDataToServer();
   }
 
   @override
@@ -99,14 +126,12 @@ class _SendingDataScreenState extends State<SendingDataScreen> {
             ),
             SizedBox(height: 20),
 
-            // Send button
-            if (progress == 0.0 || progress < 1.0)
+            // Show retry button or success button depending on the progress
+            if (progress < 1.0)
               ElevatedButton(
-                onPressed: _sendDataToServer, // Trigger data send when clicked
-                child: Text("Send Data to Server"),
+                onPressed: _sendDataToServer, // Trigger data send again if needed
+                child: Text("Retry"),
               ),
-
-            // Button to return home after successful data send
             if (progress == 1.0)
               ElevatedButton(
                 onPressed: () {
@@ -121,11 +146,11 @@ class _SendingDataScreenState extends State<SendingDataScreen> {
   }
 }
 
-class SuccessScreen extends StatelessWidget {
+class AuthorizedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Success")),
+      appBar: AppBar(title: Text("Authorized User")),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -133,7 +158,7 @@ class SuccessScreen extends StatelessWidget {
             Icon(Icons.check_circle, color: Colors.green, size: 100),
             SizedBox(height: 20),
             Text(
-              "Data Sent Successfully!",
+              "You are authorized!",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
@@ -141,7 +166,7 @@ class SuccessScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.pop(context); // Go back to the previous screen
               },
-              child: Text("Back to Home"),
+              child: Text("Go Back"),
             ),
           ],
         ),
