@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'device_model_util.dart';
+import 'secure_storage_util.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,56 +11,74 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: DeviceModelScreen(),
+      home: SecureStorageScreen(),
     );
   }
 }
 
-class DeviceModelScreen extends StatefulWidget {
+class SecureStorageScreen extends StatefulWidget {
   @override
-  _DeviceModelScreenState createState() => _DeviceModelScreenState();
+  _SecureStorageScreenState createState() => _SecureStorageScreenState();
 }
 
-class _DeviceModelScreenState extends State<DeviceModelScreen> {
-  String _deviceModelId = "Fetching...";
+class _SecureStorageScreenState extends State<SecureStorageScreen> {
+  String _storedData = "No data stored";
 
   @override
   void initState() {
     super.initState();
-    _fetchDeviceModelId();
+    _fetchStoredData();
   }
 
-  /// Fetches the device model ID and updates the UI.
-  Future<void> _fetchDeviceModelId() async {
-    final modelId = await DeviceModelUtil.getDeviceModelId();
+  /// Fetches the stored data when the screen is loaded
+  Future<void> _fetchStoredData() async {
+    String? data = await SecureStorageUtil.fetchData();
     setState(() {
-      _deviceModelId = modelId;
+      _storedData = data ?? "No data stored";
     });
+  }
+
+  /// Stores data securely
+  Future<void> _storeData(String data) async {
+    await SecureStorageUtil.storeData(data);
+    _fetchStoredData(); // Refresh the stored data after storing
+  }
+
+  /// Deletes the stored data securely
+  Future<void> _deleteData() async {
+    await SecureStorageUtil.deleteData();
+    _fetchStoredData(); // Refresh the stored data after deleting
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Device Model ID'),
+        title: const Text('Secure Storage Example'),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              "Device Model ID:",
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 20),
             Text(
-              _deviceModelId,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              "Stored Data:",
+              style: const TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              _storedData,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () => _storeData("This is secure data!"),
+              child: const Text('Store Data'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _fetchDeviceModelId,
-              child: const Text('Get Device Model'),
+              onPressed: _deleteData,
+              child: const Text('Delete Data'),
             ),
           ],
         ),
