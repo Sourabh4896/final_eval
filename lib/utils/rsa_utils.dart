@@ -80,6 +80,19 @@ class _RSAHomePageState extends State<RSAHomePage> {
     }
   }
 
+  // Method to get the encrypted data to be sent
+  String getEncryptedData() {
+    return cipherText;
+  }
+
+  // Method to receive encrypted data and decrypt
+  void setEncryptedData(String encryptedData) {
+    setState(() {
+      cipherText = encryptedData;
+    });
+    _decryptText(); // Decrypt automatically after receiving
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
