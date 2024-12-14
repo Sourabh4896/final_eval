@@ -42,7 +42,7 @@ class _RSAHomePageState extends State<RSAHomePage> {
   // Generate RSA keys
   Future<void> _generateKeys() async {
     try {
-      final keys = await RSA.generate(2048);  // Generate 2048-bit RSA keys
+      final keys = await RSA.generate(2048);
       setState(() {
         publicKey = keys.publicKey;
         privateKey = keys.privateKey;
