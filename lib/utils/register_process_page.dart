@@ -3,7 +3,8 @@ import 'device_id_util.dart'; // Import the DeviceIdUtil class
 import './../utils/key_pair_generator.dart'; // Import the RSA key pair generation functionality
 import 'data_signer.dart'; // Import the DataSigner class
 import 'display_registered_info.dart';
-
+import 'SendingDataScreen.dart'
+;
 class RegisterProcessPage extends StatefulWidget {
   @override
   _RegisterProcessPageState createState() => _RegisterProcessPageState();
@@ -35,38 +36,37 @@ class _RegisterProcessPageState extends State<RegisterProcessPage> {
     });
   }
 
-  // Function to update the progress and step
   void _updateStep() {
-    setState(() {
-      if (currentStep == 1) {
-        progress = 0.33;
-      } else if (currentStep == 2) {
-        progress = 0.66;
-        _generateRSAKeyPair(); // Generate RSA key pair during step 2
-      } else if (currentStep == 3) {
-        progress = 1.0;
-        _signData(); // Sign data during step 3
-      }
-      currentStep++;
-    });
-
-    // In _updateStep(), modify the final step completion logic
-    if (currentStep > 3) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DisplayRegisteredInfoPage(
-            publicKey: publicKey,
-            deviceId: deviceId,
-            signedData: signedData,
-          ),
-        ),
-      );
-    } else {
-      Future.delayed(Duration(seconds: 2), _updateStep);
+  setState(() {
+    if (currentStep == 1) {
+      progress = 0.33;
+    } else if (currentStep == 2) {
+      progress = 0.66;
+      _generateRSAKeyPair(); // Generate RSA key pair during step 2
+    } else if (currentStep == 3) {
+      progress = 1.0;
+      _signData(); // Sign data during step 3
     }
+    currentStep++;
+  });
 
+  // After step 3, navigate to SendingDataScreen to send the data to the server
+  if (currentStep > 3) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SendingDataScreen(
+          publicKey: publicKey,
+          deviceId: deviceId,
+          signedData: signedData,
+        ),
+      ),
+    );
+  } else {
+    Future.delayed(Duration(seconds: 2), _updateStep);
   }
+}
+
 
   // Sign data using DataSigner
   void _signData() {
