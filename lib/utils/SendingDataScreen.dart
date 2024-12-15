@@ -77,6 +77,23 @@ class _SendingDataScreenState extends State<SendingDataScreen> {
             ),
             SizedBox(height: 20),
 
+            // Display Public Key, Device ID, and Signed Data
+            Text(
+              "Public Key: ${widget.publicKey}",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 10),
+            Text(
+              "Device ID: ${widget.deviceId}",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 10),
+            Text(
+              "Signed Data: ${widget.signedData}",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 20),
+
             // Progress bar
             AnimatedContainer(
               duration: Duration(seconds: 1),
