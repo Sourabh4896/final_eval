@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'SuccessScreen.dart';
 
 class SendingDataScreen extends StatefulWidget {
   final String publicKey;
@@ -138,31 +139,3 @@ class _SendingDataScreenState extends State<SendingDataScreen> {
   }
 }
 
-class SuccessScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Success")),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 100),
-            SizedBox(height: 20),
-            Text(
-              "Data Sent Successfully!",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Go back to the previous screen
-              },
-              child: Text("Back to Home"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

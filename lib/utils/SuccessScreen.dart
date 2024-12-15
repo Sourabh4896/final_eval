@@ -42,7 +42,7 @@ class SuccessScreen extends StatelessWidget {
                     ),
                   );
                 },
-                child: Text("Go to Public Key Fetch Screen"),
+                child: Text("Receive Public Key"),
               ),
             ],
           ),
